@@ -1,10 +1,12 @@
 ﻿namespace Loupedeck.WebcamPlugin.Actions
 {
     using System;
+
     using AForge.Video.DirectShow;
+
     using Loupedeck.WebcamPlugin.Models;
 
-    public class FocusAdjustment : ActionEditorAdjustment
+    public class ExposureAdjustment : ActionEditorAdjustment
     {
         private Int32 currentValue;
         private VideoCaptureDevice _videoSource;
@@ -16,11 +18,11 @@
 
         private const String ListboxControlName = "cam";
 
-        public FocusAdjustment()
+        public ExposureAdjustment()
             : base(hasReset: false)
         {
-            this.DisplayName = "Webcam Focus";
-            this.Description = "Set the Focus for the selected Webcam";
+            this.DisplayName = "Webcam Exposure";
+            this.Description = "Set the Exposure for the selected Webcam";
 
             this.ActionEditor.AddControlEx(
                 new ActionEditorListbox(name: ListboxControlName, labelText: "Webcam:"));
@@ -45,7 +47,7 @@
         {
             if (e.ControlName.EqualsNoCase(ListboxControlName))
             {
-                e.ActionEditorState.SetDisplayName($"Set Focus for Webcam {e.ActionEditorState.GetControlValue(ListboxControlName)}");
+                e.ActionEditorState.SetDisplayName($"Set Exposure for Webcam {e.ActionEditorState.GetControlValue(ListboxControlName)}");
             }
         }
 
@@ -94,9 +96,9 @@
                     {
                         this._videoSource = new VideoCaptureDevice(device.MonikerString);
                         var cameraControlFlags = CameraControlFlags.Manual;
-                        
-                        this._videoSource.GetCameraPropertyRange(CameraControlProperty.Focus, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
-                        this._videoSource.GetCameraProperty(CameraControlProperty.Focus, out this.currentValue, out cameraControlFlags);
+
+                        this._videoSource.GetCameraPropertyRange(CameraControlProperty.Exposure, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
+                        this._videoSource.GetCameraProperty(CameraControlProperty.Exposure, out this.currentValue, out cameraControlFlags);
 
                         return;
                     }
@@ -115,7 +117,7 @@
             return true;
         }
 
-        private void SetValue() => this._videoSource.SetCameraProperty(CameraControlProperty.Focus, this.currentValue, CameraControlFlags.Manual);
+        private void SetValue() => this._videoSource.SetCameraProperty(CameraControlProperty.Exposure, this.currentValue, CameraControlFlags.Manual);
 
         protected override String GetAdjustmentDisplayName(ActionEditorActionParameters actionParameters) => this.currentValue.ToString();
     }
