@@ -1,42 +1,69 @@
 ﻿namespace Loupedeck.WebcamPlugin.Actions
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
-    using AForge.Video;
     using AForge.Video.DirectShow;
 
-    public class FocusAdjustment : PluginDynamicAdjustment
+    using Loupedeck.WebcamPlugin.Models;
+
+    public class FocusAdjustment : ActionEditorAdjustment
     {
         private Int32 currentFocus;
-        private readonly VideoCaptureDevice videoSource;
+        private VideoCaptureDevice _videoSource;
 
-        private readonly Int32 minValue;
-        private readonly Int32 maxValue;
-        private readonly Int32 defaultValue;
-        private readonly Int32 stepSize;
+        private Int32 minValue;
+        private Int32 maxValue;
+        private Int32 defaultValue;
+        private Int32 stepSize;
+
+        private const String ListboxControlName = "cam";
 
         public FocusAdjustment()
-            : base(displayName: "Focus Adjustment", description: "Sets the Webcams Focus", groupName: "Adjustments", hasReset: true)
+            : base(hasReset: false)
         {
-            var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            this.DisplayName = "Webcam Focus";
+            this.Description = "Set the Focus for the selected Webcam";
 
-            if (videoDevices.Count > 0)
+            this.ActionEditor.AddControlEx(
+                new ActionEditorListbox(name: ListboxControlName, labelText: "Webcam:"));
+
+            this.ActionEditor.ListboxItemsRequested += this.OnActionEditorListboxItemsRequested;
+            this.ActionEditor.ControlValueChanged += this.OnActionEditorControlValueChanged;
+
+            //if (videoDevices.Count > 0)
+            //{
+
+            //    var cameraControlFlags = CameraControlFlags.Manual;
+
+            //    this.videoSource.GetCameraPropertyRange(CameraControlProperty.Focus, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
+            //    this.videoSource.GetCameraProperty(CameraControlProperty.Focus, out this.currentFocus, out cameraControlFlags);
+            //}
+        }
+
+        private void OnActionEditorListboxItemsRequested(Object sender, ActionEditorListboxItemsRequestedEventArgs e)
+        {
+            ActionHelpers.FillListBox(e, ListboxControlName, () =>
             {
-                this.videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
+                var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                foreach (FilterInfo device in videoDevices)
+                {
+                    e.AddItem(name: device.Name, device.Name, String.Empty);
+                }
+            });
+        }
 
-                var cameraControlFlags = CameraControlFlags.Manual;
-
-                this.videoSource.GetCameraPropertyRange(CameraControlProperty.Focus, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
-                this.videoSource.GetCameraProperty(CameraControlProperty.Focus, out this.currentFocus, out cameraControlFlags);
+        private void OnActionEditorControlValueChanged(Object sender, ActionEditorControlValueChangedEventArgs e)
+        {
+            if (e.ControlName.EqualsNoCase(ListboxControlName))
+            {
+                e.ActionEditorState.SetDisplayName($"Set Focus for Webcam {e.ActionEditorState.GetControlValue(ListboxControlName)}");
             }
         }
 
-        protected override void ApplyAdjustment(String actionParameter, Int32 diff)
+        protected override Boolean ApplyAdjustment(ActionEditorActionParameters actionParameters, Int32 diff)
         {
+            this.LoadWebcam(actionParameters);
+
             if (diff < 0)
             {
                 if (this.currentFocus + diff < this.minValue)
@@ -62,17 +89,45 @@
 
             this.SetFocus();
             this.AdjustmentValueChanged();
+
+            return true;
         }
 
-        protected override void RunCommand(String actionParameter)
+        private void LoadWebcam(ActionEditorActionParameters parameter)
         {
+            if (this._videoSource == null)
+            {
+                var devicename = parameter.Parameters[ListboxControlName];
+                var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                foreach (FilterInfo device in videoDevices)
+                {
+                    if (device.Name.Equals(devicename))
+                    {
+                        this._videoSource = new VideoCaptureDevice(device.MonikerString);
+                        var cameraControlFlags = CameraControlFlags.Manual;
+
+                        this._videoSource.GetCameraPropertyRange(CameraControlProperty.Focus, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
+                        this._videoSource.GetCameraProperty(CameraControlProperty.Focus, out this.currentFocus, out cameraControlFlags);
+
+                        return;
+                    }
+                }
+            }
+        }
+        
+        protected override Boolean RunCommand(ActionEditorActionParameters actionParameters)
+        {
+            this.LoadWebcam(actionParameters);
+
             this.currentFocus = this.defaultValue;
             this.SetFocus();
             this.AdjustmentValueChanged();
+
+            return true;
         }
 
-        private void SetFocus() => this.videoSource.SetCameraProperty(CameraControlProperty.Focus, this.currentFocus, CameraControlFlags.Manual);
+        private void SetFocus() => this._videoSource.SetCameraProperty(CameraControlProperty.Focus, this.currentFocus, CameraControlFlags.Manual);
 
-        protected override String GetAdjustmentValue(String actionParameter) => this.currentFocus.ToString();
+        protected override String GetAdjustmentDisplayName(ActionEditorActionParameters actionParameters) => this.currentFocus.ToString();
     }
 }
