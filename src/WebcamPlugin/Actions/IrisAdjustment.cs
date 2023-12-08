@@ -1,10 +1,12 @@
 ﻿namespace Loupedeck.WebcamPlugin.Actions
 {
     using System;
+
     using AForge.Video.DirectShow;
+
     using Loupedeck.WebcamPlugin.Models;
 
-    public class FocusAdjustment : ActionEditorAdjustment
+    public class IrisAdjustment : ActionEditorAdjustment
     {
         private Int32 currentValue;
         private VideoCaptureDevice _videoSource;
@@ -16,11 +18,11 @@
 
         private const String ListboxControlName = "cam";
 
-        public FocusAdjustment()
+        public IrisAdjustment()
             : base(hasReset: false)
         {
-            this.DisplayName = "Focus";
-            this.Description = "Set the Focus for the selected Webcam";
+            this.DisplayName = "Iris";
+            this.Description = "Set the Iris for the selected Webcam";
 
             this.ActionEditor.AddControlEx(
                 new ActionEditorListbox(name: ListboxControlName, labelText: "Webcam:"));
@@ -45,7 +47,7 @@
         {
             if (e.ControlName.EqualsNoCase(ListboxControlName))
             {
-                e.ActionEditorState.SetDisplayName($"Set Focus for Webcam {e.ActionEditorState.GetControlValue(ListboxControlName)}");
+                e.ActionEditorState.SetDisplayName($"Set Iris for Webcam {e.ActionEditorState.GetControlValue(ListboxControlName)}");
             }
         }
 
@@ -94,9 +96,9 @@
                     {
                         this._videoSource = new VideoCaptureDevice(device.MonikerString);
                         var cameraControlFlags = CameraControlFlags.Manual;
-                        
-                        this._videoSource.GetCameraPropertyRange(CameraControlProperty.Focus, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
-                        this._videoSource.GetCameraProperty(CameraControlProperty.Focus, out this.currentValue, out cameraControlFlags);
+
+                        this._videoSource.GetCameraPropertyRange(CameraControlProperty.Iris, out this.minValue, out this.maxValue, out this.defaultValue, out this.stepSize, out cameraControlFlags);
+                        this._videoSource.GetCameraProperty(CameraControlProperty.Iris, out this.currentValue, out cameraControlFlags);
 
                         return;
                     }
@@ -104,7 +106,7 @@
             }
         }
         
-        private void SetValue() => this._videoSource.SetCameraProperty(CameraControlProperty.Focus, this.currentValue, CameraControlFlags.Manual);
+        private void SetValue() => this._videoSource.SetCameraProperty(CameraControlProperty.Iris, this.currentValue, CameraControlFlags.Manual);
 
         protected override String GetAdjustmentDisplayName(ActionEditorActionParameters actionParameters) => this.currentValue.ToString();
     }

@@ -21,7 +21,7 @@
         public ExposureAdjustment()
             : base(hasReset: false)
         {
-            this.DisplayName = "Webcam Exposure";
+            this.DisplayName = "Exposure";
             this.Description = "Set the Exposure for the selected Webcam";
 
             this.ActionEditor.AddControlEx(
@@ -106,17 +106,6 @@
             }
         }
         
-        protected override Boolean RunCommand(ActionEditorActionParameters actionParameters)
-        {
-            this.LoadWebcam(actionParameters);
-
-            this.currentValue = this.defaultValue;
-            this.SetValue();
-            this.AdjustmentValueChanged();
-
-            return true;
-        }
-
         private void SetValue() => this._videoSource.SetCameraProperty(CameraControlProperty.Exposure, this.currentValue, CameraControlFlags.Manual);
 
         protected override String GetAdjustmentDisplayName(ActionEditorActionParameters actionParameters) => this.currentValue.ToString();

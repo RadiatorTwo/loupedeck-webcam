@@ -61,6 +61,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\TiltAdjustment.cs" />
+    <Compile Include="Actions\ZoomAdjustment.cs" />
+    <Compile Include="Actions\RollAdjustment.cs" />
+    <Compile Include="Actions\PanAdjustment.cs" />
+    <Compile Include="Actions\IrisAdjustment.cs" />
     <Compile Include="Actions\ExposureAdjustment.cs" />
     <Compile Include="Actions\FocusAdjustment.cs" />
     <Compile Include="Models\ActionHelpers.cs" />
@@ -76,6 +81,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="metadata\Icon256x256.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
